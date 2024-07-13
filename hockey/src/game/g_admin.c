@@ -8595,7 +8595,12 @@ qboolean G_admin_red(gentity_t *ent, int skiparg)
   
     // Create the new name with the red color code
     Q_strncpyz(s, ent->client->pers.netname, sizeof(s));
-    cleanName = clean_name(s);
+
+    // Use clean_name to get a cleaned name
+    char *cleanedNamePtr = clean_name(s);
+    
+    // Copy the cleaned name into cleanName
+    Q_strncpyz(cleanName, cleanedNamePtr, sizeof(cleanName));
   
     if (strlen(cleanName) + 2 > MAX_NAME_LENGTH) {
         // Remove last two characters to fit the color code
@@ -8640,7 +8645,12 @@ qboolean G_admin_blue(gentity_t *ent, int skiparg)
   
     // Create the new name with the blue color code
     Q_strncpyz(s, ent->client->pers.netname, sizeof(s));
-    cleanName = clean_name(s);
+
+    // Use clean_name to get a cleaned name
+    char *cleanedNamePtr = clean_name(s);
+    
+    // Copy the cleaned name into cleanName
+    Q_strncpyz(cleanName, cleanedNamePtr, sizeof(cleanName));
   
     if (strlen(cleanName) + 2 > MAX_NAME_LENGTH) {
         // Remove last two characters to fit the color code
