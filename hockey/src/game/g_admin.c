@@ -8559,24 +8559,16 @@ qboolean G_admin_puck( gentity_t *ent, int skiparg )
   return qtrue;
 }
 
-char* clean_name( const char *name )
-{
-  static char cleanName[ MAX_NAME_LENGTH ];
-  int i;
-  int j = 0;
-  for( i = 0; i < strlen(name) && j < sizeof(cleanName) - 1; i++ )
-  {
-    if( name[i] == '^' && i + 1 < strlen(name) )
-    {
-      i++; // Skip the color code character
+void clean_name(char *name) {
+    int i, j = 0;
+    for (i = 0; name[i] != '\0'; i++) {
+        if (name[i] == '^' && name[i + 1] != '\0') {
+            i++; // Skip the color code character '^' and the following character
+        } else {
+            name[j++] = name[i];
+        }
     }
-    else
-    {
-      cleanName[j++] = name[i];
-    }
-  }
-  cleanName[j] = '\0'; // Null-terminate the clean name
-  return cleanName;
+    name[j] = '\0'; // Null-terminate the cleaned name
 }
 
 qboolean G_admin_red(gentity_t *ent, int skiparg)
@@ -8595,16 +8587,14 @@ qboolean G_admin_red(gentity_t *ent, int skiparg)
   
     // Create the new name with the red color code
     Q_strncpyz(s, ent->client->pers.netname, sizeof(s));
-
-    // Use clean_name to get a cleaned name
-    char *cleanedNamePtr = clean_name(s);
+    Q_strncpyz(cleanName, s, sizeof(cleanName));
     
-    // Copy the cleaned name into cleanName
-    Q_strncpyz(cleanName, cleanedNamePtr, sizeof(cleanName));
-  
+    // Use clean_name to get a cleaned name
+    clean_name(cleanName);
+    
     if (strlen(cleanName) + 2 > MAX_NAME_LENGTH) {
         // Remove last two characters to fit the color code
-        cleanName[MAX_NAME_LENGTH - 2] = '\0';
+        cleanName[MAX_NAME_LENGTH - 3] = '\0';
     }
   
     Q_strncpyz(newname, "^1", sizeof(newname));
@@ -8645,16 +8635,14 @@ qboolean G_admin_blue(gentity_t *ent, int skiparg)
   
     // Create the new name with the blue color code
     Q_strncpyz(s, ent->client->pers.netname, sizeof(s));
-
-    // Use clean_name to get a cleaned name
-    char *cleanedNamePtr = clean_name(s);
+    Q_strncpyz(cleanName, s, sizeof(cleanName));
     
-    // Copy the cleaned name into cleanName
-    Q_strncpyz(cleanName, cleanedNamePtr, sizeof(cleanName));
-  
+    // Use clean_name to get a cleaned name
+    clean_name(cleanName);
+    
     if (strlen(cleanName) + 2 > MAX_NAME_LENGTH) {
         // Remove last two characters to fit the color code
-        cleanName[MAX_NAME_LENGTH - 2] = '\0';
+        cleanName[MAX_NAME_LENGTH - 3] = '\0';
     }
   
     Q_strncpyz(newname, "^4", sizeof(newname));
