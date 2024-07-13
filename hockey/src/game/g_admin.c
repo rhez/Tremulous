@@ -8581,6 +8581,7 @@ char* clean_name( const char *name )
 
 qboolean G_admin_red(gentity_t *ent, int skiparg)
 {
+    char cleanName[MAX_NAME_LENGTH];
     char newname[MAX_NAME_LENGTH];
     char err[MAX_STRING_CHARS];
     char userinfo[MAX_INFO_STRING];
@@ -8594,7 +8595,7 @@ qboolean G_admin_red(gentity_t *ent, int skiparg)
   
     // Create the new name with the red color code
     Q_strncpyz(s, ent->client->pers.netname, sizeof(s));
-    char *cleanName = clean_name(s);
+    cleanName = clean_name(s);
   
     if (strlen(cleanName) + 2 > MAX_NAME_LENGTH) {
         // Remove last two characters to fit the color code
@@ -8625,6 +8626,7 @@ qboolean G_admin_red(gentity_t *ent, int skiparg)
 
 qboolean G_admin_blue(gentity_t *ent, int skiparg)
 {
+    char cleanName[MAX_NAME_LENGTH];
     char newname[MAX_NAME_LENGTH];
     char err[MAX_STRING_CHARS];
     char userinfo[MAX_INFO_STRING];
@@ -8638,7 +8640,7 @@ qboolean G_admin_blue(gentity_t *ent, int skiparg)
   
     // Create the new name with the blue color code
     Q_strncpyz(s, ent->client->pers.netname, sizeof(s));
-    char *cleanName = clean_name(s);
+    cleanName = clean_name(s);
   
     if (strlen(cleanName) + 2 > MAX_NAME_LENGTH) {
         // Remove last two characters to fit the color code
