@@ -79,11 +79,6 @@ g_admin_cmd_t g_admin_cmds[ ] =
       "specified",
       "[^3name|slot#|IP^7] (^5time^7) (^5reason^7)"
     },
-    
-    {"blue", G_admin_blue, "blue",
-      "change your name color to blue",
-      ""
-    },
 
     {"buildlog", G_admin_buildlog, "buildlog",
       "display a list of recent builds and deconstructs, optionally specifying"
@@ -258,11 +253,6 @@ g_admin_cmd_t g_admin_cmds[ ] =
 
     {"readconfig", G_admin_readconfig, "readconfig",
       "reloads the admin config file and refreshes permission flags",
-      ""
-    },
-
-    {"red", G_admin_red, "red",
-      "change your name color to red",
       ""
     },
     
@@ -466,7 +456,17 @@ g_admin_cmd_t g_admin_cmds[ ] =
     {"practise", G_admin_practise, "practise",
       "enables practise mode",
       "[^3on|off^7]"
-    }
+    },
+
+    {"blue", G_admin_blue, "color",
+      "Makes your name blue",
+      ""
+    },
+
+    {"red", G_admin_red, "color",
+      "Makes your name red",
+      ""
+    },
 
   };
 
@@ -8559,110 +8559,98 @@ qboolean G_admin_puck( gentity_t *ent, int skiparg )
   return qtrue;
 }
 
-void clean_name(char *name) {
-    int i, j = 0;
-    for (i = 0; name[i] != '\0'; i++) {
-        if (name[i] == '^' && name[i + 1] != '\0') {
-            i++; // Skip the color code character '^' and the following character
-        } else {
-            name[j++] = name[i];
-        }
+char* clean_name( const char *name )
+{
+  static char cleanName[ MAX_NAME_LENGTH ];
+  int j = 0;
+  int i = 0;
+  for( i = 0; i < strlen(name) && j < sizeof(cleanName) - 1; i++ )
+  {
+    if( name[i] == '^' && i + 1 < strlen(name) )
+    {
+      i++; // Skip the color code character
     }
-    name[j] = '\0'; // Null-terminate the cleaned name
+    else
+    {
+      cleanName[j++] = name[i];
+    }
+  }
+  cleanName[j] = '\0'; // Null-terminate the clean name
+  return cleanName;
 }
 
-qboolean G_admin_red(gentity_t *ent, int skiparg)
+qboolean G_admin_red( gentity_t *ent, int skiparg )
 {
-    char cleanName[MAX_NAME_LENGTH];
-    char newname[MAX_NAME_LENGTH];
-    char err[MAX_STRING_CHARS];
-    char userinfo[MAX_INFO_STRING];
-    char s[MAX_NAME_LENGTH];
-    int num;
-    
-    if (!ent)
-        return qfalse; 
-    
-    num = ent->s.number;
+  char name[ MAX_NAME_LENGTH ];
+  char newname[ MAX_NAME_LENGTH ];
+  char err[ MAX_STRING_CHARS ];
+  char userinfo[ MAX_INFO_STRING ];
+  int num;
+
+  if(!ent)
+    return qfalse;
   
-    // Create the new name with the red color code
-    Q_strncpyz(s, ent->client->pers.netname, sizeof(s));
-    Q_strncpyz(cleanName, s, sizeof(cleanName));
-    
-    // Use clean_name to get a cleaned name
-    clean_name(cleanName);
-    
-    if (strlen(cleanName) + 2 > MAX_NAME_LENGTH) {
-        // Remove last two characters to fit the color code
-        cleanName[MAX_NAME_LENGTH - 3] = '\0';
-    }
-  
-    Q_strncpyz(newname, "^1", sizeof(newname));
-    Q_strcat(newname, sizeof(newname), cleanName);
+  num = ent->s.number;
 
-    // Validate the new name
-    if (!G_admin_name_check(ent, newname, err, sizeof(err))) {
-        G_admin_print(ent, va("^3!red: Invalid name: ^7%s\n", err));
-        return qfalse;
-    }
+  // Create the new name with the red color code
+  Q_strncpyz( name, ent->client->pers.netname, (MAX_NAME_LENGTH - 2) ); //Auriga, oh lord, is this even legal?
+  Q_strncpyz( name, clean_name(name), sizeof(name) );
+  Q_strncpyz(newname, va( "^1%s", name ), sizeof(newname) );
 
-    // Update the player's name
-    trap_GetUserinfo(num, userinfo, sizeof(userinfo));
-    Info_SetValueForKey(userinfo, "name", newname);
-    trap_SetUserinfo(num, userinfo);
-    ClientUserinfoChanged(num, qtrue);
+  // Validate the new name
+  if( !G_admin_name_check( ent, newname, err, sizeof( err ) ) )
+  {
+    G_admin_print( ent, va( "^3!red: Invalid name: ^7%s\n", err ) );
+    return qfalse;
+  }
 
-    // Announce the name change
-    AP(va("print \"^3!red: ^7%s^7 has changed their name to %s^7\n\"",
-          s, newname));
+  // Announce the name change
+  AP( va( "print \"^3!red: ^7%s^7 has changed their name to %s^7\n\"",
+      ent->client->pers.netname, newname ) );
 
-    return qtrue;
+  // Update the player's name
+  trap_GetUserinfo( num, userinfo, sizeof( userinfo ) );
+  Info_SetValueForKey( userinfo, "name", newname );
+  trap_SetUserinfo( num, userinfo );
+  ClientUserinfoChanged( num, qtrue );
+
+  return qtrue;
 }
 
-qboolean G_admin_blue(gentity_t *ent, int skiparg)
+qboolean G_admin_blue( gentity_t *ent, int skiparg )
 {
-    char cleanName[MAX_NAME_LENGTH];
-    char newname[MAX_NAME_LENGTH];
-    char err[MAX_STRING_CHARS];
-    char userinfo[MAX_INFO_STRING];
-    char s[MAX_NAME_LENGTH];
-    int num;
-    
-    if (!ent)
-        return qfalse;
-    
-    num = ent->s.number;
+  char name[ MAX_NAME_LENGTH ];
+  char newname[ MAX_NAME_LENGTH ];
+  char err[ MAX_STRING_CHARS ];
+  char userinfo[ MAX_INFO_STRING ];
+  int num;
+
+  if(!ent)
+    return qfalse;
   
-    // Create the new name with the blue color code
-    Q_strncpyz(s, ent->client->pers.netname, sizeof(s));
-    Q_strncpyz(cleanName, s, sizeof(cleanName));
-    
-    // Use clean_name to get a cleaned name
-    clean_name(cleanName);
-    
-    if (strlen(cleanName) + 2 > MAX_NAME_LENGTH) {
-        // Remove last two characters to fit the color code
-        cleanName[MAX_NAME_LENGTH - 3] = '\0';
-    }
-  
-    Q_strncpyz(newname, "^4", sizeof(newname));
-    Q_strcat(newname, sizeof(newname), cleanName);
+  num = ent->s.number;
 
-    // Validate the new name
-    if (!G_admin_name_check(ent, newname, err, sizeof(err))) {
-        G_admin_print(ent, va("^3!blue: Invalid name: ^7%s\n", err));
-        return qfalse;
-    }
+  // Create the new name with the blue color code
+  Q_strncpyz( name, ent->client->pers.netname, (MAX_NAME_LENGTH - 2) ); //Auriga, oh lord, is this even legal?
+  Q_strncpyz( name, clean_name(name), sizeof(name) );
+  Q_strncpyz( newname, va( "^4%s", name ), sizeof(newname) );
 
-    // Update the player's name
-    trap_GetUserinfo(num, userinfo, sizeof(userinfo));
-    Info_SetValueForKey(userinfo, "name", newname);
-    trap_SetUserinfo(num, userinfo);
-    ClientUserinfoChanged(num, qtrue);
+  // Validate the new name
+  if( !G_admin_name_check( ent, newname, err, sizeof( err ) ) )
+  {
+    G_admin_print( ent, va( "^3!blue: Invalid name: ^7%s\n", err ) );
+    return qfalse;
+  }
 
-    // Announce the name change
-    AP(va("print \"^3!blue: ^7%s^7 has changed their name to %s^7\n\"",
-          s, newname));
+  // Announce the name change
+  AP( va( "print \"^3!blue: ^7%s^7 has changed their name to %s^7\n\"",
+      ent->client->pers.netname, newname ) );
 
-    return qtrue;
+  // Update the player's name
+  trap_GetUserinfo( num, userinfo, sizeof( userinfo ) );
+  Info_SetValueForKey( userinfo, "name", newname );
+  trap_SetUserinfo( num, userinfo );
+  ClientUserinfoChanged( num, qtrue );
+
+  return qtrue;
 }

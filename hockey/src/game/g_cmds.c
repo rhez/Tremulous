@@ -2777,6 +2777,13 @@ void Cmd_Class_f( gentity_t *ent )
   trap_Argv( 1, s, sizeof( s ) );
   newClass = BG_FindClassNumForName( s );
 
+  if(newClass == PCL_ALIEN_LEVEL0) //Auriga: No dretch for you!
+  {
+    trap_SendServerCommand( ent-g_entities,
+      "print \"You cannot be a Dretch in hockey \n\"" );
+    return;
+  }
+
   if( ent->client->sess.sessionTeam == TEAM_SPECTATOR )
   {
     if( ent->client->sess.spectatorState == SPECTATOR_FOLLOW )
